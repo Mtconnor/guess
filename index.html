@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title></title>
+	<script src="js/jquery-3.1.1.js"></script>
+	<style>
+	div{
+		text-align: center;
+	}
+	img{
+		width: 150px;
+	}
+	button{
+		font-size: 20px;
+	}
+	.right{
+		outline: 5px solid lime;
+	}
+	.wrong{
+		outline: 5px solid red;
+	}
+	</style>
+</head>
+<body>
+
+<div>
+	<img src="image/back.jpg">
+	<img src="image/back.jpg">
+	<img src="image/back.jpg">
+	<img src="image/back.jpg">
+	<img src="image/back.jpg">
+	<p><button>来试试手气吧</button></p>
+</div>
+
+<script>
+	$(document).ready(function(){
+
+		// 生成5张牌的序列
+		function genCards(){
+			// 放5张牌的数组
+			var cards = [];
+
+			// king必放，所以随机生成它的位置：0~4之间
+			var pos = Math.floor(Math.random() * 5);
+			// 在此位置放入king
+			cards[pos] = 'king';
+
+			// 所有普通牌
+			var all = [1,2,3,4,5,6,7,8,9,10,11,12,13];
+			// 选牌范围：初始是整个范围
+			var range = all.length;
+
+			// cards数组其余位置放入随机选择的普通牌
+			for(var i=0; i<5; i++){
+				// 如果当前位置不是king，则放随机的普通牌
+				if(cards[i] != 'king'){
+					// 随机选择普通牌（与上次不重复）
+					pos = Math.floor(Math.random() * range);
+					// 放入牌
+					cards[i] = all[pos];
+
+					// 为避免重复
+					// 如果选的牌不是范围中的最后一张
+					if(pos != range-1){
+						all[pos] = all[range-1];  // 在缩小范围之前，把范围中的最后一张搬到刚才被选的位置
+					}
+					// 缩小选择范围
+					range--;
+				}
+			}
+
+			return cards;  // 返回牌的数组，共有5张牌
+		}
+		
+		// 开牌
+		function open(cards){
+			// 遍历cards数组，按顺序设置5幅图片的路径
+			for(var i=0; i<cards.length; i++){
+				$('img').eq(i).attr('src', 'image/' + cards[i] + '.jpg');
+			}
+		}
+
+		$('button').on('click',function fun1(){  // 这个事件处理函数之后要重复使用，于是给它命名为fun1
+			$('button').off('click');  // 避免多次点击按钮
+			
+			// 全部牌显示背面
+			$('img').attr('src','image/back.jpg').removeClass();
+			
+			// 开牌前先生成牌的序列
+			var cards = genCards();
+			console.log(cards);
+
+			$('button').text('猜一猜，大王是哪一个');
+			
+			$('img').on('click',function(){
+				$('img').off('click');  // 避免多次点击图片，避免点击多幅图片
+				
+				open(cards);  // 开牌
+
+				// 获取点击的牌this是全部牌img中的第几张，从0开始的索引
+				var choice = $('img').index(this);
+				
+				// 到原序列中看这张牌是不是king
+				if(cards[choice] == 'king'){
+					$('button').text('恭喜你，猜中了，再来一局吧');
+					$(this).addClass('right');
+				}else{
+					$('button').text('倒霉蛋，猜错了，再来一局吧');
+					$(this).addClass('wrong');
+				}
+				
+				// 继续玩，重新绑定事件，这里使用了命名函数fun1
+				$('button').on('click', fun1);
+			});
+		});
+
+	});
+</script>
+
+</body>
+</html>
